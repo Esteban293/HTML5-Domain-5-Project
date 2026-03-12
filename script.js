@@ -1,40 +1,53 @@
-console.log("js console"); 
+console.log("js started");
 
-let data; 
-let grid = document.querySelector(".grid-container"); 
+var data;
+var grid = document.querySelector(".grid-container");
 
-var xhttp = new XMLHttpRequest(); 
+// LOAD DATA (localStorage first, otherwise XHR)
+if (localStorage.getItem("datalist")) {
+  data = JSON.parse(localStorage.getItem("datalist"));
+  console.log("Loaded from localStorage");
+  if (grid) {
+    makeCards();
+  }
+} else {
+  var xhttp = new XMLHttpRequest;
 
-xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) { 
+  xhttp.onreadystatechange = function () {
+    if (this.readyState == 4 && this.status == 200) {
+      data = JSON.parse(this.responseText);
+      console.log("Loaded from gameData.json");
 
-       data = JSON.parse(xhttp.responseText); 
-       console.log(data); 
-       
-	localStorage.setItem(“dataList”, JSON.stringify(data));
+      localStorage.setItem("datalist", JSON.stringify(data));
+      console.log("Saved starter data to localStorage");
 
-       data.forEach(function(game) { 
-        let card = document.createElement("div"); 
-        card.classList.add("card"); 
-
-        let textData =
-          "<div class='game-title'>" + game.title + "</div>" +
-          "<span>" +
-          "Publisher: " + game.publisher + "<br>" +
-          " Release Date: " + game.releaseDate + "<br>" +
-          "Needs Research: " +
-          "</span>";
-
-        card.innerHTML = textData;
-        if (game.imgSrc) { 
-            card.style.backgroundImage = "url('" + game.imgSrc + "')";
-        }
-
-        grid.appendChild(card); 
-       });
-
+      if (grid) {
+        makeCards();
+      }
     }
-};
+  };
 
-xhttp.open("GET", "gamedata.json", true); 
-xhttp.send(); 
+  xhttp.open("GET", "list.json", true);
+  xhttp.send();
+}
+
+// RENDER CARDS
+function makeCards() {
+  grid.innerHTML = "";
+
+  data.forEach(function (book) {
+    let card = document.createElement("div");
+    card.classList.add("card");
+
+    let textData =
+      "<div class='book-title'>" + book.title + "</div>" +
+      "<div>Publisher: " + book.author + "</div>";
+
+    card.innerHTML = textData;
+    grid.appendChild(card);
+  });
+
+  console.log("cards refreshed");
+}
+
+
